@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dmc\dmc.hpp" />
+    <ClInclude Include="include\dmc\object.hpp" />
+    <ClInclude Include="include\dmc\triangle.hpp" />
+    <ClInclude Include="include\dmc\vertex.hpp" />
+    <ClInclude Include="include\dmc\branch_tree_node.hpp" />
+    <ClInclude Include="include\dmc\leaf_tree_node.hpp" />
+    <ClInclude Include="include\dmc\tree.hpp" />
+    <ClInclude Include="include\dmc\tree_config.hpp" />
+    <ClInclude Include="include\dmc\tree_node.hpp" />
+    <ClInclude Include="include\dmc\marching_cubes.hpp" />
+    <ClInclude Include="include\dmc\vector_base.hpp" />
+    <ClInclude Include="include\dmc\vector.hpp" />
+    <ClInclude Include="include\dmc\math_util.hpp" />
+    <ClInclude Include="include\dmc\io.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>
