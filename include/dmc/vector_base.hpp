@@ -136,20 +136,40 @@ namespace dmc
 			});
 		}
 
+		auto abs() const
+		{
+			return map([](auto x) { using std::abs; return abs(x); });
+		}
+
 		auto norm_l1() const
 		{
-			return map([](auto x) { using std::abs; return abs(x); }).sum();
+			return abs().sum();
+		}
+
+		auto squared() const
+		{
+			return map([](auto x) { return squared(x); });
 		}
 
 		auto norm_l2_sq() const
 		{
-			return map([](auto x) { return squared(x); }).sum();
+			return squared().sum();
 		}
 
 		auto norm_l2() const
 		{
 			using std::sqrt;
 			return sqrt(norm_l2_sq());
+		}
+
+		auto max() const
+		{
+			return reduce([](auto x, auto y) { using std::max; return max(x, y); });
+		}
+
+		auto min() const
+		{
+			return reduce([](auto x, auto y) { using std::min; return min(x, y); });
 		}
 
 		bool try_normalize()
