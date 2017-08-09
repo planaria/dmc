@@ -2,6 +2,8 @@
 Dual Marching Cubes Implementation in C++  
 [reference](https://www.cs.rice.edu/~jwarren/papers/dmc.pdf)
 
+![cube](dmc.png "cube")
+
 ## Features
 - Header-only  
   `#include <dmc/dmc.hpp>`
