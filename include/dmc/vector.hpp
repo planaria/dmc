@@ -4,7 +4,6 @@
 
 namespace dmc
 {
-
 	template <class Scalar, int Dimension>
 	class vector : public vector_base<vector<Scalar, Dimension>, Scalar, Dimension>
 	{
@@ -14,13 +13,11 @@ namespace dmc
 	class vector<Scalar, 2> : public vector_base<vector<Scalar, 2>, Scalar, 2>
 	{
 	private:
-
 		typedef vector_base<vector<Scalar, 2>, Scalar, 2> base_type;
 
 	public:
-
-		using base_type::scalar_type;
 		using base_type::dimension;
+		using typename base_type::scalar_type;
 
 		vector()
 		{
@@ -51,20 +48,17 @@ namespace dmc
 		{
 			return (*this)[1];
 		}
-
 	};
 
 	template <class Scalar>
 	class vector<Scalar, 3> : public vector_base<vector<Scalar, 3>, Scalar, 3>
 	{
 	private:
-
 		typedef vector_base<vector<Scalar, 3>, Scalar, 3> base_type;
 
 	public:
-
-		using base_type::scalar_type;
 		using base_type::dimension;
+		using typename base_type::scalar_type;
 
 		vector()
 		{
@@ -106,20 +100,17 @@ namespace dmc
 		{
 			return (*this)[2];
 		}
-
 	};
 
 	template <class Scalar>
 	class vector<Scalar, 4> : public vector_base<vector<Scalar, 4>, Scalar, 4>
 	{
 	private:
-
 		typedef vector_base<vector<Scalar, 4>, Scalar, 4> base_type;
 
 	public:
-
-		using base_type::scalar_type;
 		using base_type::dimension;
+		using typename base_type::scalar_type;
 
 		vector()
 		{
@@ -181,14 +172,13 @@ namespace dmc
 
 		vector<Scalar, 3>& xyz()
 		{
-			return *reinterpret_cast<vector<Scalar, 3>*>(data());
+			return *reinterpret_cast<vector<Scalar, 3>*>(this->data());
 		}
 
 		const vector<Scalar, 3>& xyz() const
 		{
-			return *reinterpret_cast<const vector<Scalar, 3>*>(data());
+			return *reinterpret_cast<const vector<Scalar, 3>*>(this->data());
 		}
-
 	};
 
 	template <class Scalar1, class Scalar2, int Dimension, class F>
@@ -243,7 +233,7 @@ namespace dmc
 	}
 
 	template <class Scalar, int Dimension>
-	std::ostream& operator <<(std::ostream& os, const vector<Scalar, Dimension>& v)
+	std::ostream& operator<<(std::ostream& os, const vector<Scalar, Dimension>& v)
 	{
 		for (int i = 0; i < Dimension; ++i)
 		{
@@ -258,5 +248,4 @@ namespace dmc
 
 	typedef vector<double, 3> vector3d;
 	typedef vector<float, 3> vector3f;
-
 }

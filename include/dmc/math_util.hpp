@@ -2,7 +2,6 @@
 
 namespace dmc
 {
-
 	template <class T>
 	auto squared(const T& t)
 	{
@@ -15,7 +14,7 @@ namespace dmc
 		if (t < static_cast<T>(0))
 			return static_cast<T>(-1);
 
-		if(t > static_cast<T>(0))
+		if (t > static_cast<T>(0))
 			return static_cast<T>(1);
 
 		return static_cast<T>(0);
@@ -32,5 +31,4 @@ namespace dmc
 	{
 		return (x - x1) / (x2 - x1);
 	}
-
 }

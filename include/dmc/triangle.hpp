@@ -3,12 +3,10 @@
 
 namespace dmc
 {
-
 	template <class Vector>
 	class triangle
 	{
 	public:
-
 		typedef Vector vector_type;
 
 		triangle()
@@ -38,11 +36,9 @@ namespace dmc
 		}
 
 	private:
-
 		vector_type p1_;
 		vector_type p2_;
 		vector_type p3_;
-
 	};
 
 	template <class Vector>
@@ -53,5 +49,4 @@ namespace dmc
 
 	typedef triangle<vector3d> triangle3d;
 	typedef triangle<vector3f> triangle3f;
-
 }

@@ -1,26 +1,24 @@
 #pragma once
-#include "tree_config.hpp"
-#include "tree_node.hpp"
 #include "branch_tree_node.hpp"
 #include "leaf_tree_node.hpp"
-#include "object.hpp"
-#include "vector.hpp"
 #include "marching_cubes.hpp"
-#include <array>
-#include <vector>
-#include <memory>
-#include <algorithm>
+#include "object.hpp"
+#include "tree_config.hpp"
+#include "tree_node.hpp"
+#include "vector.hpp"
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <algorithm>
+#include <array>
+#include <memory>
+#include <vector>
 
 namespace dmc
 {
-
 	template <class Scalar>
 	class tree
 	{
 	public:
-
 		typedef Scalar scalar_type;
 		typedef vector<scalar_type, 3> vector_type;
 		typedef object<scalar_type> object_type;
@@ -36,10 +34,10 @@ namespace dmc
 		{
 			auto v = maximum - minimum;
 
-			size_ = v.map([&](auto x)
-			{
-				return std::max(static_cast<scalar_type>(1.0), std::ceil(x / config_.grid_width));
-			}).cast<std::size_t>();
+			size_ = v.map([&](auto x) {
+						 return std::max(static_cast<scalar_type>(1.0), std::ceil(x / config_.grid_width));
+					 })
+						.template cast<std::size_t>();
 
 			children_.resize(size_.product());
 		}
@@ -129,7 +127,6 @@ namespace dmc
 		}
 
 	private:
-
 		std::size_t index(std::size_t ix, std::size_t iy, std::size_t iz) const
 		{
 			return iz * size_.y() * size_.x() + iy * size_.x() + ix;
@@ -138,32 +135,30 @@ namespace dmc
 		std::unique_ptr<node_type> generate_impl(const object_type& obj, const vector_type& minimum, const vector_type& maximum, std::size_t depth) const
 		{
 			std::array<vector_type, 8> points =
-			{ {
-				{ minimum.x(), minimum.y(), minimum.z() },
-				{ maximum.x(), minimum.y(), minimum.z() },
-				{ minimum.x(), maximum.y(), minimum.z() },
-				{ maximum.x(), maximum.y(), minimum.z() },
-				{ minimum.x(), minimum.y(), maximum.z() },
-				{ maximum.x(), minimum.y(), maximum.z() },
-				{ minimum.x(), maximum.y(), maximum.z() },
-				{ maximum.x(), maximum.y(), maximum.z() },
-			} };
+				{{
+					{minimum.x(), minimum.y(), minimum.z()},
+					{maximum.x(), minimum.y(), minimum.z()},
+					{minimum.x(), maximum.y(), minimum.z()},
+					{maximum.x(), maximum.y(), minimum.z()},
+					{minimum.x(), minimum.y(), maximum.z()},
+					{maximum.x(), minimum.y(), maximum.z()},
+					{minimum.x(), maximum.y(), maximum.z()},
+					{maximum.x(), maximum.y(), maximum.z()},
+				}};
 
 			std::array<scalar_type, 8> values;
 
 			std::transform(points.begin(), points.end(), values.begin(),
-				[&](const auto& p)
-			{
-				return obj.value(p);
-			});
+						   [&](const auto& p) {
+							   return obj.value(p);
+						   });
 
 			std::array<vector_type, 8> grads;
 
 			std::transform(points.begin(), points.end(), grads.begin(),
-				[&](const auto& p)
-			{
-				return obj.grad(p);
-			});
+						   [&](const auto& p) {
+							   return obj.grad(p);
+						   });
 
 			Eigen::Matrix<scalar_type, 11, 4> a;
 
@@ -175,9 +170,18 @@ namespace dmc
 				a(i, 3) = static_cast<scalar_type>(-1.0);
 			}
 
-			a(8, 0) = config_.nominal_weight; a(8, 1) = 0.0; a(8, 2) = 0.0; a(8, 3) = 0.0;
-			a(9, 0) = 0.0; a(9, 1) = config_.nominal_weight; a(9, 2) = 0.0; a(9, 3) = 0.0;
-			a(10, 0) = 0.0; a(10, 1) = 0.0; a(10, 2) = config_.nominal_weight; a(10, 3) = 0.0;
+			a(8, 0) = config_.nominal_weight;
+			a(8, 1) = 0.0;
+			a(8, 2) = 0.0;
+			a(8, 3) = 0.0;
+			a(9, 0) = 0.0;
+			a(9, 1) = config_.nominal_weight;
+			a(9, 2) = 0.0;
+			a(9, 3) = 0.0;
+			a(10, 0) = 0.0;
+			a(10, 1) = 0.0;
+			a(10, 2) = config_.nominal_weight;
+			a(10, 3) = 0.0;
 
 			Eigen::Matrix<scalar_type, 11, 1> b;
 
@@ -207,16 +211,16 @@ namespace dmc
 			else
 			{
 				std::array<std::unique_ptr<node_type>, 8> nodes =
-				{ {
-					generate_impl(obj,{ minimum.x(), minimum.y(), minimum.z() }, { medium.x(), medium.y(), medium.z() }, depth + 1),
-					generate_impl(obj,{ medium.x(), minimum.y(), minimum.z() }, { maximum.x(), medium.y(), medium.z() }, depth + 1),
-					generate_impl(obj,{ minimum.x(), medium.y(), minimum.z() }, { medium.x(), maximum.y(), medium.z() }, depth + 1),
-					generate_impl(obj,{ medium.x(), medium.y(), minimum.z() }, { maximum.x(), maximum.y(), medium.z() }, depth + 1),
-					generate_impl(obj,{ minimum.x(), minimum.y(), medium.z() }, { medium.x(), medium.y(), maximum.z() }, depth + 1),
-					generate_impl(obj,{ medium.x(), minimum.y(), medium.z() }, { maximum.x(), medium.y(), maximum.z() }, depth + 1),
-					generate_impl(obj,{ minimum.x(), medium.y(), medium.z() }, { medium.x(), maximum.y(), maximum.z() }, depth + 1),
-					generate_impl(obj,{ medium.x(), medium.y(), medium.z() }, { maximum.x(), maximum.y(), maximum.z() }, depth + 1),
-				} };
+					{{
+						generate_impl(obj, {minimum.x(), minimum.y(), minimum.z()}, {medium.x(), medium.y(), medium.z()}, depth + 1),
+						generate_impl(obj, {medium.x(), minimum.y(), minimum.z()}, {maximum.x(), medium.y(), medium.z()}, depth + 1),
+						generate_impl(obj, {minimum.x(), medium.y(), minimum.z()}, {medium.x(), maximum.y(), medium.z()}, depth + 1),
+						generate_impl(obj, {medium.x(), medium.y(), minimum.z()}, {maximum.x(), maximum.y(), medium.z()}, depth + 1),
+						generate_impl(obj, {minimum.x(), minimum.y(), medium.z()}, {medium.x(), medium.y(), maximum.z()}, depth + 1),
+						generate_impl(obj, {medium.x(), minimum.y(), medium.z()}, {maximum.x(), medium.y(), maximum.z()}, depth + 1),
+						generate_impl(obj, {minimum.x(), medium.y(), medium.z()}, {medium.x(), maximum.y(), maximum.z()}, depth + 1),
+						generate_impl(obj, {medium.x(), medium.y(), medium.z()}, {maximum.x(), maximum.y(), maximum.z()}, depth + 1),
+					}};
 
 				return std::make_unique<branch_node_type>(std::move(nodes));
 			}
@@ -607,16 +611,16 @@ namespace dmc
 				auto l8 = static_cast<const leaf_node_type*>(&n8);
 
 				std::array<const vertex_type*, 8> vertices =
-				{ {
-					&l1->vertex(),
-					&l2->vertex(),
-					&l3->vertex(),
-					&l4->vertex(),
-					&l5->vertex(),
-					&l6->vertex(),
-					&l7->vertex(),
-					&l8->vertex(),
-				} };
+					{{
+						&l1->vertex(),
+						&l2->vertex(),
+						&l3->vertex(),
+						&l4->vertex(),
+						&l5->vertex(),
+						&l6->vertex(),
+						&l7->vertex(),
+						&l8->vertex(),
+					}};
 
 				marching_cubes<scalar_type>(vertices, receiver);
 			}
@@ -630,7 +634,5 @@ namespace dmc
 
 		vector<std::size_t, 3> size_;
 		std::vector<std::unique_ptr<node_type>> children_;
-
 	};
-
 }

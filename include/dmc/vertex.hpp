@@ -3,12 +3,10 @@
 
 namespace dmc
 {
-
 	template <class Scalar>
 	class vertex
 	{
 	public:
-		
 		typedef Scalar scalar_type;
 		typedef vector<scalar_type, 3> vector_type;
 
@@ -35,11 +33,8 @@ namespace dmc
 		}
 
 	private:
-
 		vector_type position_;
 		scalar_type offset_;
 		bool sign_;
-
 	};
-
 }

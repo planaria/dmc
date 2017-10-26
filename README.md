@@ -12,6 +12,7 @@ Dual Marching Cubes Implementation in C++
 
 ### Supported Compilers
 - Visual Studio 2017
+- Clang (>=3.8.1)
 
 ### External Libraries
 - Boost C++ Libraries (>= 1.64.0)

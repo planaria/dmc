@@ -1,25 +1,32 @@
 #pragma once
 #include "math_util.hpp"
-#include <numeric>
-#include <boost/operators.hpp>
 #include <boost/assert.hpp>
+#include <boost/operators.hpp>
+#include <cmath>
+#include <limits>
+#include <numeric>
 
 namespace dmc
 {
-
 	template <class Scalar, int Dimension>
 	class vector;
 
 	template <class Derived, class Scalar, int Dimension>
 	class vector_base
-		: boost::addable<Derived
-		, boost::subtractable<Derived
-		, boost::multipliable<Derived, Scalar
-		, boost::dividable<Derived, Scalar
-		, boost::equality_comparable<Derived>>>>>
+		: boost::addable<
+			  Derived,
+			  boost::subtractable<
+				  Derived,
+				  boost::multipliable<
+					  Derived,
+					  Scalar,
+					  boost::dividable<
+						  Derived,
+						  Scalar,
+						  boost::equality_comparable<
+							  Derived>>>>>
 	{
 	public:
-
 		typedef Scalar scalar_type;
 		static const int dimension = Dimension;
 
@@ -33,50 +40,50 @@ namespace dmc
 			return &values_[0];
 		}
 
-		scalar_type& operator [](int index)
+		scalar_type& operator[](int index)
 		{
 			BOOST_ASSERT(0 <= index && index < dimension);
 			return values_[index];
 		}
 
-		scalar_type operator [](int index) const
+		scalar_type operator[](int index) const
 		{
 			BOOST_ASSERT(0 <= index && index < dimension);
 			return values_[index];
 		}
 
-		Derived operator -() const
+		Derived operator-() const
 		{
 			return map([](auto x) { return -x; });
 		}
 
-		const Derived& operator +() const
+		const Derived& operator+() const
 		{
 			return derived();
 		}
 
-		Derived& operator +=(const Derived& rhs)
+		Derived& operator+=(const Derived& rhs)
 		{
 			for (int i = 0; i < dimension; ++i)
 				(*this)[i] += rhs[i];
 			return derived();
 		}
 
-		Derived& operator -=(const Derived& rhs)
+		Derived& operator-=(const Derived& rhs)
 		{
 			for (int i = 0; i < dimension; ++i)
 				(*this)[i] -= rhs[i];
 			return derived();
 		}
 
-		Derived& operator *=(scalar_type rhs)
+		Derived& operator*=(scalar_type rhs)
 		{
 			for (int i = 0; i < dimension; ++i)
 				(*this)[i] *= rhs;
 			return derived();
 		}
 
-		Derived& operator /=(scalar_type rhs)
+		Derived& operator/=(scalar_type rhs)
 		{
 			for (int i = 0; i < dimension; ++i)
 				(*this)[i] /= rhs;
@@ -100,7 +107,7 @@ namespace dmc
 
 		auto sign() const
 		{
-			return map([](auto x) { return ano::sign(x); });
+			return map([](auto x) { return dmc::sign(x); });
 		}
 
 		template <class T, class F>
@@ -122,16 +129,14 @@ namespace dmc
 
 		auto sum() const
 		{
-			return reduce([](auto x, auto y)
-			{
+			return reduce([](auto x, auto y) {
 				return x + y;
 			});
 		}
 
 		auto product() const
 		{
-			return reduce([](auto x, auto y)
-			{
+			return reduce([](auto x, auto y) {
 				return x * y;
 			});
 		}
@@ -198,7 +203,7 @@ namespace dmc
 			return result;
 		}
 
-		friend bool operator ==(const Derived& lhs, const Derived& rhs)
+		friend bool operator==(const Derived& lhs, const Derived& rhs)
 		{
 			for (int i = 0; i < dimension; ++i)
 				if (lhs[i] != rhs[i])
@@ -208,7 +213,6 @@ namespace dmc
 		}
 
 	private:
-
 		Derived& derived()
 		{
 			return static_cast<Derived&>(*this);
@@ -220,7 +224,5 @@ namespace dmc
 		}
 
 		scalar_type values_[dimension] = {};
-
 	};
-
 }

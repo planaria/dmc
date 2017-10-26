@@ -3,7 +3,6 @@
 
 namespace dmc
 {
-
 	template <class Scalar>
 	struct tree_config
 	{
@@ -14,5 +13,4 @@ namespace dmc
 		std::size_t maximum_depth = static_cast<std::size_t>(-1);
 		scalar_type nominal_weight = static_cast<scalar_type>(0.1);
 	};
-
 }
