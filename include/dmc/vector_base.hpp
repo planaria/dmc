@@ -153,7 +153,7 @@ namespace dmc
 
 		auto squared() const
 		{
-			return map([](auto x) { return squared(x); });
+			return map([this](auto x) { return x * x; });
 		}
 
 		auto norm_l2_sq() const
