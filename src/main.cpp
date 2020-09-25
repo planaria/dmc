@@ -2,7 +2,7 @@
 #include <fstream>
 
 template <class Scalar>
-struct test_object : dmc::object<Scalar>
+struct test_object : dmc::dual_object<Scalar, test_object<Scalar>>
 {
 public:
 	typedef dmc::object<Scalar> base_type;
@@ -15,35 +15,10 @@ public:
 	{
 	}
 
-	virtual scalar_type value(const vector_type& p) const override
+	template <class Vector>
+	auto templated_value(const Vector& p) const
 	{
-		auto abs_p = p.map([](auto x) { return std::abs(x); });
-
-		if (abs_p.x() < abs_p.y())
-		{
-			if (abs_p.y() < abs_p.z())
-				return radius_ - abs_p.z();
-			else
-				return radius_ - abs_p.y();
-		}
-		else
-		{
-			if (abs_p.x() < abs_p.z())
-				return radius_ - abs_p.z();
-			else
-				return radius_ - abs_p.x();
-		}
-	}
-
-	virtual vector_type grad(const vector_type& p) const override
-	{
-		auto eps = 1.0e-6;
-
-		return vector_type(
-				   value(p + vector_type(eps, 0.0, 0.0)) - value(p - vector_type(eps, 0.0, 0.0)),
-				   value(p + vector_type(0.0, eps, 0.0)) - value(p - vector_type(0.0, eps, 0.0)),
-				   value(p + vector_type(0.0, 0.0, eps)) - value(p - vector_type(0.0, 0.0, eps))) /
-			   (2.0 * eps);
+		return 1.0 - p.norm_l_inf();
 	}
 
 private:
@@ -52,7 +27,10 @@ private:
 
 int main(int /*argc*/, char* /*argv*/ [])
 {
-	dmc::tree<double> t({-3.0, -3.0, -3.0}, {3.0, 3.0, 3.0});
+	dmc::tree_config<double> config;
+	config.tolerance = 0.001;
+
+	dmc::tree<double> t({-3.0, -3.0, -3.0}, {3.0, 3.0, 3.0}, config);
 	t.generate(test_object<double>(1.5f));
 
 	std::vector<dmc::triangle3d> triangles;

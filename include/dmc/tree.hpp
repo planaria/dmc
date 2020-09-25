@@ -34,10 +34,11 @@ namespace dmc
 		{
 			auto v = maximum - minimum;
 
-			size_ = v.map([&](auto x) {
-						 return std::max(static_cast<scalar_type>(1.0), std::ceil(x / config_.grid_width));
-					 })
-						.template cast<std::size_t>();
+			auto scaler = [&](auto x) {
+				return std::max(static_cast<scalar_type>(1.0), std::ceil(x / config_.grid_width));
+			};
+
+			size_ = v.map(scaler).template cast<std::size_t>();
 
 			children_.resize(size_.product());
 		}
@@ -148,17 +149,19 @@ namespace dmc
 
 			std::array<scalar_type, 8> values;
 
-			std::transform(points.begin(), points.end(), values.begin(),
-						   [&](const auto& p) {
-							   return obj.value(p);
-						   });
+			std::transform(points.begin(), points.end(), values.begin(), [&](const auto& p) {
+				return obj.value(p);
+			});
 
 			std::array<vector_type, 8> grads;
 
-			std::transform(points.begin(), points.end(), grads.begin(),
-						   [&](const auto& p) {
-							   return obj.grad(p);
-						   });
+			auto sanitize = [](scalar_type x) {
+				return std::isnan(x) ? 0.0 : x;
+			};
+
+			std::transform(points.begin(), points.end(), grads.begin(), [&](const auto& p) {
+				return obj.grad(p).map(sanitize);
+			});
 
 			Eigen::Matrix<scalar_type, 11, 4> a;
 

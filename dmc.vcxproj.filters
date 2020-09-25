@@ -18,6 +18,7 @@
     <ClInclude Include="include\dmc\vector.hpp" />
     <ClInclude Include="include\dmc\math_util.hpp" />
     <ClInclude Include="include\dmc\io.hpp" />
+    <ClInclude Include="include\dmc\dual.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

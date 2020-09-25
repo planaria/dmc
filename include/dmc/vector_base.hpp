@@ -167,6 +167,11 @@ namespace dmc
 			return sqrt(norm_l2_sq());
 		}
 
+		auto norm_l_inf() const
+		{
+			return abs().max();
+		}
+
 		auto max() const
 		{
 			return reduce([](auto x, auto y) { using std::max; return max(x, y); });
