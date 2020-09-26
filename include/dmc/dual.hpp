@@ -105,6 +105,20 @@ namespace dmc
 			return dual(value, grad);
 		}
 
+		friend dual sin(const dual& d)
+		{
+			auto value = std::sin(d.value());
+			auto grad = d.grad() * std::cos(d.value());
+			return dual(value, grad);
+		}
+
+		friend dual cos(const dual& d)
+		{
+			auto value = std::cos(d.value());
+			auto grad = -d.grad() * std::sin(d.value());
+			return dual(value, grad);
+		}
+
 	private:
 		scalar_type value_{};
 		scalar_type grad_{};

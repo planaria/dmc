@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dmc\dual.hpp" />
+    <ClInclude Include="include\dmc\functions.hpp" />
     <ClInclude Include="include\dmc\io.hpp" />
     <ClInclude Include="include\dmc\marching_cubes.hpp" />
     <ClInclude Include="include\dmc\triangle.hpp" />
