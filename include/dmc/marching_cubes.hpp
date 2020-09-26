@@ -372,11 +372,11 @@ namespace dmc
 			append(2, 8, 6);
 			break;
 		case 0b00011001:
-			append(0, 5, 11);
-			append(0, 11, 2);
-			append(2, 11, 6);
-			append(11, 4, 6);
-			append(1, 4, 11);
+			append(1, 4, 6);
+			append(1, 6, 11);
+			append(11, 6, 2);
+			append(11, 2, 5);
+			append(5, 2, 0);
 			break;
 		case 0b00011011:
 			append(2, 9, 6);
@@ -396,25 +396,27 @@ namespace dmc
 			append(10, 9, 11);
 			break;
 		case 0b00111100:
-			append(4, 5, 10);
-			append(10, 5, 11);
-			append(9, 8, 7);
-			append(7, 8, 6);
+			append(4, 5, 8);
+			append(8, 5, 9);
+			append(10, 6, 11);
+			append(11, 6, 7);
 			break;
 		case 0b00111101:
-			append(6, 7, 10);
-			append(10, 7, 11);
-			append(0, 5, 9);
+			append(0, 5, 11);
+			append(0, 11, 2);
+			append(2, 11, 6);
+			append(11, 4, 6);
+			append(1, 4, 11);
 			break;
 		case 0b00111111:
 			append(6, 7, 10);
 			append(10, 7, 11);
 			break;
 		case 0b01101001:
-			append(0, 4, 8);
-			append(1, 5, 11);
-			append(2, 7, 9);
-			append(3, 6, 10);
+			append(0, 5, 9);
+			append(1, 4, 10);
+			append(2, 6, 8);
+			append(3, 7, 11);
 			break;
 		case 0b01101011:
 			append(1, 4, 8);
