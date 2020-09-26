@@ -13,18 +13,12 @@ namespace dmc
 
 	template <class Derived, class Scalar, int Dimension>
 	class vector_base
-		: boost::addable<
-			  Derived,
-			  boost::subtractable<
-				  Derived,
-				  boost::multipliable<
-					  Derived,
-					  Scalar,
-					  boost::dividable<
-						  Derived,
-						  Scalar,
-						  boost::equality_comparable<
-							  Derived>>>>>
+		: boost::addable<Derived
+		, boost::subtractable<Derived
+		, boost::multipliable<Derived, Scalar
+		, boost::dividable<Derived, Scalar
+		, boost::equality_comparable<Derived
+		>>>>>
 	{
 	public:
 		typedef Scalar scalar_type;
@@ -46,7 +40,7 @@ namespace dmc
 			return values_[index];
 		}
 
-		scalar_type operator[](int index) const
+		const scalar_type& operator[](int index) const
 		{
 			BOOST_ASSERT(0 <= index && index < dimension);
 			return values_[index];

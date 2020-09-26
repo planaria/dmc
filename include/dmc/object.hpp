@@ -10,6 +10,9 @@ namespace dmc
 	public:
 		typedef Scalar scalar_type;
 		typedef vector<scalar_type, 3> vector_type;
+		typedef dual<scalar_type, 3> dual_type;
+
+		virtual dual_type value_grad(const vector_type& p) const = 0;
 
 		virtual scalar_type value(const vector_type& p) const = 0;
 
@@ -25,6 +28,20 @@ namespace dmc
 	public:
 		using typename base_type::scalar_type;
 		using typename base_type::vector_type;
+		using typename base_type::dual_type;
+
+		virtual dual_type value_grad(const vector_type& p) const override
+		{
+			typedef dual<scalar_type, 3> dual_type;
+			typedef vector<dual_type, 3> dual_vector_type;
+
+			dual_type dx(p.x(), vector_type(static_cast<scalar_type>(1.0), static_cast<scalar_type>(0.0), static_cast<scalar_type>(0.0)));
+			dual_type dy(p.y(), vector_type(static_cast<scalar_type>(0.0), static_cast<scalar_type>(1.0), static_cast<scalar_type>(0.0)));
+			dual_type dz(p.z(), vector_type(static_cast<scalar_type>(0.0), static_cast<scalar_type>(0.0), static_cast<scalar_type>(1.0)));
+			dual_vector_type dp(dx, dy, dz);
+
+			return derived().templated_value(dp);
+		}
 
 		virtual scalar_type value(const vector_type& p) const override
 		{
@@ -33,18 +50,7 @@ namespace dmc
 
 		virtual vector_type grad(const vector_type& p) const override
 		{
-			typedef dual<scalar_type> dual_type;
-			typedef vector<dual_type, 3> dual_vector_type;
-
-			dual_vector_type dual_x(dual_type(p.x(), static_cast<scalar_type>(1.0)), dual_type(p.y(), static_cast<scalar_type>(0.0)), dual_type(p.z(), static_cast<scalar_type>(0.0)));
-			dual_vector_type dual_y(dual_type(p.x(), static_cast<scalar_type>(0.0)), dual_type(p.y(), static_cast<scalar_type>(1.0)), dual_type(p.z(), static_cast<scalar_type>(0.0)));
-			dual_vector_type dual_z(dual_type(p.x(), static_cast<scalar_type>(0.0)), dual_type(p.y(), static_cast<scalar_type>(0.0)), dual_type(p.z(), static_cast<scalar_type>(1.0)));
-
-			auto px = derived().templated_value(dual_x);
-			auto py = derived().templated_value(dual_y);
-			auto pz = derived().templated_value(dual_z);
-
-			return vector_type(px.grad(), py.grad(), pz.grad());
+			return value_grad(p).grad();
 		}
 
 	private:

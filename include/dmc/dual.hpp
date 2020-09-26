@@ -1,26 +1,29 @@
 #pragma once
+#include "vector.hpp"
 #include <boost/operators.hpp>
 
 namespace dmc
 {
-	template <class Scalar>
+	template <class Scalar, int Dimension>
 	class dual
-		: boost::addable<dual<Scalar>
-		, boost::addable<dual<Scalar>, Scalar
-		, boost::subtractable<dual<Scalar>
-		, boost::subtractable<dual<Scalar>, Scalar
-		, boost::multipliable<dual<Scalar>
-		, boost::multipliable<dual<Scalar>, Scalar
-		, boost::dividable<dual<Scalar>
-		, boost::dividable<dual<Scalar>, Scalar
-		, boost::equality_comparable<dual<Scalar>
-		, boost::equality_comparable<dual<Scalar>, Scalar
-		, boost::less_than_comparable<dual<Scalar>
-		, boost::less_than_comparable<dual<Scalar>, Scalar
+		: boost::addable<dual<Scalar, Dimension>
+		, boost::addable<dual<Scalar, Dimension>, Scalar
+		, boost::subtractable<dual<Scalar, Dimension>
+		, boost::subtractable<dual<Scalar, Dimension>, Scalar
+		, boost::multipliable<dual<Scalar, Dimension>
+		, boost::multipliable<dual<Scalar, Dimension>, Scalar
+		, boost::dividable<dual<Scalar, Dimension>
+		, boost::dividable<dual<Scalar, Dimension>, Scalar
+		, boost::equality_comparable<dual<Scalar, Dimension>
+		, boost::equality_comparable<dual<Scalar, Dimension>, Scalar
+		, boost::less_than_comparable<dual<Scalar, Dimension>
+		, boost::less_than_comparable<dual<Scalar, Dimension>, Scalar
 		>>>>>>>>>>>>
 	{
 	public:
 		typedef Scalar scalar_type;
+		static const int dimension = Dimension;
+		typedef vector<scalar_type, dimension> vector_type;
 
 		dual() = default;
 
@@ -29,18 +32,28 @@ namespace dmc
 		{
 		}
 
-		dual(scalar_type value, scalar_type	grad)
+		dual(scalar_type value, const vector_type& grad)
 			: value_(value)
 			, grad_(grad)
 		{
 		}
 
-		scalar_type value() const
+		scalar_type& value()
 		{
 			return value_;
 		}
 
-		scalar_type grad() const
+		const scalar_type& value() const
+		{
+			return value_;
+		}
+
+		vector_type& grad()
+		{
+			return grad_;
+		}
+
+		const vector_type& grad() const
 		{
 			return grad_;
 		}
@@ -121,6 +134,6 @@ namespace dmc
 
 	private:
 		scalar_type value_{};
-		scalar_type grad_{};
+		vector_type grad_;
 	};
 }

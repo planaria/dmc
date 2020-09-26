@@ -21,6 +21,7 @@ namespace dmc
 	public:
 		typedef Scalar scalar_type;
 		typedef vector<scalar_type, 3> vector_type;
+		typedef dual<scalar_type, 3> dual_type;
 		typedef object<scalar_type> object_type;
 		typedef tree_config<scalar_type> config_type;
 		typedef tree_node<scalar_type> node_type;
@@ -147,29 +148,25 @@ namespace dmc
 					{maximum.x(), maximum.y(), maximum.z()},
 				}};
 
-			std::array<scalar_type, 8> values;
-
-			std::transform(points.begin(), points.end(), values.begin(), [&](const auto& p) {
-				return obj.value(p);
-			});
-
-			std::array<vector_type, 8> grads;
+			std::array<dual_type, 8> values;
 
 			auto sanitize = [](scalar_type x) {
 				return std::isnan(x) ? 0.0 : x;
 			};
 
-			std::transform(points.begin(), points.end(), grads.begin(), [&](const auto& p) {
-				return obj.grad(p).map(sanitize);
+			std::transform(points.begin(), points.end(), values.begin(), [&](const auto& p) {
+				auto d = obj.value_grad(p);
+				d.grad() = d.grad().map(sanitize);
+				return d;
 			});
 
 			Eigen::Matrix<scalar_type, 11, 4> a;
 
 			for (int i = 0; i < 8; ++i)
 			{
-				a(i, 0) = grads[i].x();
-				a(i, 1) = grads[i].y();
-				a(i, 2) = grads[i].z();
+				a(i, 0) = values[i].grad().x();
+				a(i, 1) = values[i].grad().y();
+				a(i, 2) = values[i].grad().z();
 				a(i, 3) = static_cast<scalar_type>(-1.0);
 			}
 
@@ -191,7 +188,7 @@ namespace dmc
 			auto medium = (minimum + maximum) * static_cast<scalar_type>(0.5);
 
 			for (int i = 0; i < 8; ++i)
-				b(i) = dot_product(grads[i], points[i] - medium) - values[i];
+				b(i) = dot_product(values[i].grad(), points[i] - medium) - values[i].value();
 
 			b(8) = 0.0;
 			b(9) = 0.0;
@@ -205,7 +202,7 @@ namespace dmc
 			auto error = scalar_type();
 
 			for (int i = 0; i < 8; ++i)
-				error += squared(offset - values[i] - dot_product(grads[i], center - points[i]));
+				error += squared(offset - values[i].value() - dot_product(values[i].grad(), center - points[i]));
 
 			if (depth >= config_.maximum_depth || error < squared(config_.tolerance))
 			{
