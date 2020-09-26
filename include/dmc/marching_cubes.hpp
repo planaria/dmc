@@ -402,11 +402,9 @@ namespace dmc
 			append(11, 6, 7);
 			break;
 		case 0b00111101:
-			append(0, 5, 11);
-			append(0, 11, 2);
-			append(2, 11, 6);
-			append(11, 4, 6);
-			append(1, 4, 11);
+			append(6, 7, 10);
+			append(10, 7, 11);
+			append(0, 5, 9);
 			break;
 		case 0b00111111:
 			append(6, 7, 10);
