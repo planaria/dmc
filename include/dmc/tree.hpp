@@ -8,6 +8,7 @@
 #include "tree_node.hpp"
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <boost/pool/object_pool.hpp>
 #include <algorithm>
 #include <array>
 #include <memory>
@@ -35,6 +36,8 @@ namespace dmc
 		explicit tree(const vector_type& minimum, const vector_type& maximum, const config_type& config = config_type())
 			: minimum_(minimum)
 			, config_(config)
+			, branch_pool_(omp_get_max_threads())
+			, leaf_pool_(omp_get_max_threads())
 		{
 			vector_type v = maximum - minimum;
 
@@ -204,19 +207,18 @@ namespace dmc
 			return iz * size_.y() * size_.x() + iy * size_.x() + ix;
 		}
 
-		std::unique_ptr<node_type> generate_impl(const object_type& obj, const vector_type& minimum, const vector_type& maximum, std::size_t depth) const
+		node_type* generate_impl(const object_type& obj, const vector_type& minimum, const vector_type& maximum, std::size_t depth)
 		{
-			std::array<vector_type, 8> points =
-				{{
-					{minimum.x(), minimum.y(), minimum.z()},
-					{maximum.x(), minimum.y(), minimum.z()},
-					{minimum.x(), maximum.y(), minimum.z()},
-					{maximum.x(), maximum.y(), minimum.z()},
-					{minimum.x(), minimum.y(), maximum.z()},
-					{maximum.x(), minimum.y(), maximum.z()},
-					{minimum.x(), maximum.y(), maximum.z()},
-					{maximum.x(), maximum.y(), maximum.z()},
-				}};
+			std::array<vector_type, 8> points = {{
+				{minimum.x(), minimum.y(), minimum.z()},
+				{maximum.x(), minimum.y(), minimum.z()},
+				{minimum.x(), maximum.y(), minimum.z()},
+				{maximum.x(), maximum.y(), minimum.z()},
+				{minimum.x(), minimum.y(), maximum.z()},
+				{maximum.x(), minimum.y(), maximum.z()},
+				{minimum.x(), maximum.y(), maximum.z()},
+				{maximum.x(), maximum.y(), maximum.z()},
+			}};
 
 			std::array<dual_type, 8> values;
 
@@ -285,23 +287,22 @@ namespace dmc
 
 			if (depth >= config_.maximum_depth || error < squared(config_.tolerance))
 			{
-				return std::make_unique<leaf_node_type>(vertex_type(center, offset));
+				return leaf_pool_[omp_get_thread_num()].construct(vertex_type(center, offset));
 			}
 			else
 			{
-				std::array<std::unique_ptr<node_type>, 8> nodes =
-					{{
-						generate_impl(obj, {minimum.x(), minimum.y(), minimum.z()}, {medium.x(), medium.y(), medium.z()}, depth + 1),
-						generate_impl(obj, {medium.x(), minimum.y(), minimum.z()}, {maximum.x(), medium.y(), medium.z()}, depth + 1),
-						generate_impl(obj, {minimum.x(), medium.y(), minimum.z()}, {medium.x(), maximum.y(), medium.z()}, depth + 1),
-						generate_impl(obj, {medium.x(), medium.y(), minimum.z()}, {maximum.x(), maximum.y(), medium.z()}, depth + 1),
-						generate_impl(obj, {minimum.x(), minimum.y(), medium.z()}, {medium.x(), medium.y(), maximum.z()}, depth + 1),
-						generate_impl(obj, {medium.x(), minimum.y(), medium.z()}, {maximum.x(), medium.y(), maximum.z()}, depth + 1),
-						generate_impl(obj, {minimum.x(), medium.y(), medium.z()}, {medium.x(), maximum.y(), maximum.z()}, depth + 1),
-						generate_impl(obj, {medium.x(), medium.y(), medium.z()}, {maximum.x(), maximum.y(), maximum.z()}, depth + 1),
-					}};
+				std::array<node_type*, 8> nodes = {{
+					generate_impl(obj, {minimum.x(), minimum.y(), minimum.z()}, {medium.x(), medium.y(), medium.z()}, depth + 1),
+					generate_impl(obj, {medium.x(), minimum.y(), minimum.z()}, {maximum.x(), medium.y(), medium.z()}, depth + 1),
+					generate_impl(obj, {minimum.x(), medium.y(), minimum.z()}, {medium.x(), maximum.y(), medium.z()}, depth + 1),
+					generate_impl(obj, {medium.x(), medium.y(), minimum.z()}, {maximum.x(), maximum.y(), medium.z()}, depth + 1),
+					generate_impl(obj, {minimum.x(), minimum.y(), medium.z()}, {medium.x(), medium.y(), maximum.z()}, depth + 1),
+					generate_impl(obj, {medium.x(), minimum.y(), medium.z()}, {maximum.x(), medium.y(), maximum.z()}, depth + 1),
+					generate_impl(obj, {minimum.x(), medium.y(), medium.z()}, {medium.x(), maximum.y(), maximum.z()}, depth + 1),
+					generate_impl(obj, {medium.x(), medium.y(), medium.z()}, {maximum.x(), maximum.y(), maximum.z()}, depth + 1),
+				}};
 
-				return std::make_unique<branch_node_type>(std::move(nodes));
+				return branch_pool_[omp_get_thread_num()].construct(nodes);
 			}
 		}
 
@@ -689,17 +690,16 @@ namespace dmc
 				auto l7 = static_cast<const leaf_node_type*>(&n7);
 				auto l8 = static_cast<const leaf_node_type*>(&n8);
 
-				std::array<const vertex_type*, 8> vertices =
-					{{
-						&l1->vertex(),
-						&l2->vertex(),
-						&l3->vertex(),
-						&l4->vertex(),
-						&l5->vertex(),
-						&l6->vertex(),
-						&l7->vertex(),
-						&l8->vertex(),
-					}};
+				std::array<const vertex_type*, 8> vertices = {{
+					&l1->vertex(),
+					&l2->vertex(),
+					&l3->vertex(),
+					&l4->vertex(),
+					&l5->vertex(),
+					&l6->vertex(),
+					&l7->vertex(),
+					&l8->vertex(),
+				}};
 
 				marching_cubes<scalar_type>(vertices, receiver);
 			}
@@ -712,6 +712,9 @@ namespace dmc
 		scalar_type grid_width_;
 
 		vector_size_type size_;
-		std::vector<std::unique_ptr<node_type>> children_;
+		std::vector<node_type*> children_;
+
+		std::vector<boost::object_pool<branch_node_type>> branch_pool_;
+		std::vector<boost::object_pool<leaf_node_type>> leaf_pool_;
 	};
 }

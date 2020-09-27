@@ -10,17 +10,17 @@ namespace dmc
 	public:
 		typedef tree_node<Scalar> base_type;
 
-		explicit branch_tree_node(std::array<std::unique_ptr<base_type>, 8>&& children)
-			: children_(std::move(children))
+		explicit branch_tree_node(const std::array<base_type*, 8>& children)
+			: children_(children)
 		{
 		}
 
-		const std::array<std::unique_ptr<base_type>, 8>& children() const
+		const std::array<base_type*, 8>& children() const
 		{
 			return children_;
 		}
 
 	private:
-		std::array<std::unique_ptr<base_type>, 8> children_;
+		std::array<base_type*, 8> children_;
 	};
 }
