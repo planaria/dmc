@@ -7,16 +7,12 @@
 template <class Scalar>
 struct test_object : dmc::dual_object<Scalar, test_object<Scalar>>
 {
-public:
+private:
 	typedef dmc::object<Scalar> base_type;
 
+public:
 	using typename base_type::scalar_type;
 	using typename base_type::vector_type;
-
-	explicit test_object(scalar_type radius)
-		: radius_(radius)
-	{
-	}
 
 	template <class T>
 	T templated_value(const Eigen::Matrix<T, 3, 1>& p) const
@@ -26,9 +22,6 @@ public:
 
 		return std::min(cube1, -cube2);
 	}
-
-private:
-	scalar_type radius_;
 };
 
 int main(int /*argc*/, char* /*argv*/ [])
@@ -43,7 +36,9 @@ int main(int /*argc*/, char* /*argv*/ [])
 
 	double last_progress = 0.0;
 
-	t.generate(test_object<double>(1.5f), [&](double progress) {
+	test_object<double> obj;
+
+	t.generate(obj, [&](double progress) {
 		if (progress > last_progress + 0.01)
 		{
 			std::cout << std::fixed << std::setprecision(3) << progress << std::endl;
