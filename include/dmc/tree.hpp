@@ -12,6 +12,7 @@
 #include <array>
 #include <memory>
 #include <vector>
+#include <random>
 
 namespace dmc
 {
@@ -44,17 +45,48 @@ namespace dmc
 			children_.resize(size_.product());
 		}
 
-		void generate(const object_type& obj)
+		void generate(const object_type& obj, const std::function<void(double)>& progress_receiver)
 		{
-			for (std::size_t iz = 0; iz < size_.z(); ++iz)
+			generate(obj, &progress_receiver);
+		}
+
+		void generate(const object_type& obj, const std::function<void(double)>* progress_receiver = nullptr)
+		{
+			auto total_size = size_.x() * size_.y() * size_.z();
+
+			std::size_t progress = 0;
+
+			if (progress_receiver)
 			{
-				for (std::size_t iy = 0; iy < size_.y(); ++iy)
+				(*progress_receiver)(0.0);
+			}
+
+			std::vector<std::size_t> indices(total_size);
+
+			for (std::size_t i = 0; i < total_size; ++i)
+			{
+				indices[i] = i;
+			}
+
+			std::mt19937 gen;
+			std::shuffle(indices.begin(), indices.end(), gen);
+
+#pragma omp parallel for schedule(dynamic)
+			for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(total_size); ++i)
+			{
+				auto j = indices[i];
+				auto ix = j % size_.x();
+				auto iy = j / size_.x() % size_.y();
+				auto iz = j / size_.x() / size_.y();
+				auto minimum = minimum_ + vector<std::size_t, 3>(ix, iy, iz).cast<scalar_type>() * config_.grid_width;
+				auto maximum = minimum_ + vector<std::size_t, 3>(ix + 1, iy + 1, iz + 1).cast<scalar_type>() * config_.grid_width;
+				children_[index(ix, iy, iz)] = generate_impl(obj, minimum, maximum, 0);
+
+				if (progress_receiver)
 				{
-					for (std::size_t ix = 0; ix < size_.x(); ++ix)
+#pragma omp critical
 					{
-						auto minimum = minimum_ + vector<std::size_t, 3>(ix, iy, iz).cast<scalar_type>() * config_.grid_width;
-						auto maximum = minimum_ + vector<std::size_t, 3>(ix + 1, iy + 1, iz + 1).cast<scalar_type>() * config_.grid_width;
-						children_[index(ix, iy, iz)] = generate_impl(obj, minimum, maximum, 0);
+						(*progress_receiver)(static_cast<double>(++progress) / static_cast<double>(total_size));
 					}
 				}
 			}

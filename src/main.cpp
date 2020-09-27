@@ -31,7 +31,10 @@ int main(int /*argc*/, char* /*argv*/ [])
 	config.tolerance = 0.001;
 
 	dmc::tree<double> t({-3.0, -3.0, -3.0}, {3.0, 3.0, 3.0}, config);
-	t.generate(test_object<double>(1.5f));
+
+	t.generate(test_object<double>(1.5f), [](double progress) {
+		std::cout << std::fixed << std::setprecision(3) << progress << std::endl;
+	});
 
 	std::vector<dmc::triangle3d> triangles;
 
