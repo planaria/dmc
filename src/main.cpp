@@ -33,12 +33,19 @@ private:
 int main(int /*argc*/, char* /*argv*/ [])
 {
 	dmc::tree_config<double> config;
+	config.grid_width = 0.1;
 	config.tolerance = 0.001;
 
 	dmc::tree<double> t({-3.0, -3.0, -3.0}, {3.0, 3.0, 3.0}, config);
 
-	t.generate(test_object<double>(1.5f), [](double progress) {
-		std::cout << std::fixed << std::setprecision(3) << progress << std::endl;
+	double last_progress = 0.0;
+
+	t.generate(test_object<double>(1.5f), [&](double progress) {
+		if (progress > last_progress + 0.01)
+		{
+			std::cout << std::fixed << std::setprecision(3) << progress << std::endl;
+			last_progress = progress;
+		}
 	});
 
 	std::vector<dmc::triangle3d> triangles;
