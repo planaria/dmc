@@ -3,6 +3,7 @@
 #include "leaf_tree_node.hpp"
 #include "marching_cubes.hpp"
 #include "object.hpp"
+#include "triangle.hpp"
 #include "tree_config.hpp"
 #include "tree_node.hpp"
 #include <Eigen/Core>
@@ -29,6 +30,7 @@ namespace dmc
 		typedef branch_tree_node<scalar_type> branch_node_type;
 		typedef leaf_tree_node<scalar_type> leaf_node_type;
 		typedef vertex<scalar_type> vertex_type;
+		typedef triangle<vector_type> triangle_type;
 
 		explicit tree(const vector_type& minimum, const vector_type& maximum, const config_type& config = config_type())
 			: minimum_(minimum)
@@ -92,72 +94,108 @@ namespace dmc
 			}
 		}
 
-		template <class Receiver>
-		void enumerate(Receiver receiver)
+		std::vector<triangle_type> enumerate()
 		{
-			for (std::size_t iz = 0; iz < size_.z(); ++iz)
+			auto total_size = size_.x() * size_.y() * size_.z();
+
+			std::vector<std::size_t> indices(total_size);
+
+			for (std::size_t i = 0; i < total_size; ++i)
 			{
-				for (std::size_t iy = 0; iy < size_.y(); ++iy)
+				indices[i] = i;
+			}
+
+			std::mt19937 gen;
+			std::shuffle(indices.begin(), indices.end(), gen);
+
+			std::vector<std::vector<std::pair<std::size_t, triangle_type>>> local_triangles(omp_get_max_threads());
+
+#pragma omp parallel for schedule(dynamic)
+			for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(total_size); ++i)
+			{
+				auto j = indices[i];
+				auto ix = j % size_.x();
+				auto iy = j / size_.x() % size_.y();
+				auto iz = j / size_.x() / size_.y();
+
+				auto receiver = [&](const triangle_type& t) {
+					local_triangles[omp_get_thread_num()].emplace_back(j, t);
+				};
+
+				enumerate_impl_c(*children_[index(ix, iy, iz)], receiver);
+
+				if (ix != size_.x() - 1)
+					enumerate_impl_f_x(*children_[index(ix, iy, iz)], *children_[index(ix + 1, iy, iz)], receiver);
+
+				if (iy != size_.y() - 1)
+					enumerate_impl_f_y(*children_[index(ix, iy, iz)], *children_[index(ix, iy + 1, iz)], receiver);
+
+				if (iz != size_.z() - 1)
+					enumerate_impl_f_z(*children_[index(ix, iy, iz)], *children_[index(ix, iy, iz + 1)], receiver);
+
+				if (ix != size_.x() - 1 && iy != size_.y() - 1)
 				{
-					for (std::size_t ix = 0; ix < size_.x(); ++ix)
-					{
-						enumerate_impl_c(*children_[index(ix, iy, iz)], receiver);
+					enumerate_impl_e_xy(
+						*children_[index(ix, iy, iz)],
+						*children_[index(ix + 1, iy, iz)],
+						*children_[index(ix, iy + 1, iz)],
+						*children_[index(ix + 1, iy + 1, iz)],
+						receiver);
+				}
 
-						if (ix != size_.x() - 1)
-							enumerate_impl_f_x(*children_[index(ix, iy, iz)], *children_[index(ix + 1, iy, iz)], receiver);
+				if (iy != size_.y() - 1 && iz != size_.z() - 1)
+				{
+					enumerate_impl_e_yz(
+						*children_[index(ix, iy, iz)],
+						*children_[index(ix, iy + 1, iz)],
+						*children_[index(ix, iy, iz + 1)],
+						*children_[index(ix, iy + 1, iz + 1)],
+						receiver);
+				}
 
-						if (iy != size_.y() - 1)
-							enumerate_impl_f_y(*children_[index(ix, iy, iz)], *children_[index(ix, iy + 1, iz)], receiver);
+				if (ix != size_.x() - 1 && iz != size_.z() - 1)
+				{
+					enumerate_impl_e_xz(
+						*children_[index(ix, iy, iz)],
+						*children_[index(ix + 1, iy, iz)],
+						*children_[index(ix, iy, iz + 1)],
+						*children_[index(ix + 1, iy, iz + 1)],
+						receiver);
+				}
 
-						if (iz != size_.z() - 1)
-							enumerate_impl_f_z(*children_[index(ix, iy, iz)], *children_[index(ix, iy, iz + 1)], receiver);
-
-						if (ix != size_.x() - 1 && iy != size_.y() - 1)
-						{
-							enumerate_impl_e_xy(
-								*children_[index(ix, iy, iz)],
-								*children_[index(ix + 1, iy, iz)],
-								*children_[index(ix, iy + 1, iz)],
-								*children_[index(ix + 1, iy + 1, iz)],
-								receiver);
-						}
-
-						if (iy != size_.y() - 1 && iz != size_.z() - 1)
-						{
-							enumerate_impl_e_yz(
-								*children_[index(ix, iy, iz)],
-								*children_[index(ix, iy + 1, iz)],
-								*children_[index(ix, iy, iz + 1)],
-								*children_[index(ix, iy + 1, iz + 1)],
-								receiver);
-						}
-
-						if (ix != size_.x() - 1 && iz != size_.z() - 1)
-						{
-							enumerate_impl_e_xz(
-								*children_[index(ix, iy, iz)],
-								*children_[index(ix + 1, iy, iz)],
-								*children_[index(ix, iy, iz + 1)],
-								*children_[index(ix + 1, iy, iz + 1)],
-								receiver);
-						}
-
-						if (ix != size_.x() - 1 && iy != size_.y() - 1 && iz != size_.z() - 1)
-						{
-							enumerate_impl_v(
-								*children_[index(ix, iy, iz)],
-								*children_[index(ix + 1, iy, iz)],
-								*children_[index(ix, iy + 1, iz)],
-								*children_[index(ix + 1, iy + 1, iz)],
-								*children_[index(ix, iy, iz + 1)],
-								*children_[index(ix + 1, iy, iz + 1)],
-								*children_[index(ix, iy + 1, iz + 1)],
-								*children_[index(ix + 1, iy + 1, iz + 1)],
-								receiver);
-						}
-					}
+				if (ix != size_.x() - 1 && iy != size_.y() - 1 && iz != size_.z() - 1)
+				{
+					enumerate_impl_v(
+						*children_[index(ix, iy, iz)],
+						*children_[index(ix + 1, iy, iz)],
+						*children_[index(ix, iy + 1, iz)],
+						*children_[index(ix + 1, iy + 1, iz)],
+						*children_[index(ix, iy, iz + 1)],
+						*children_[index(ix + 1, iy, iz + 1)],
+						*children_[index(ix, iy + 1, iz + 1)],
+						*children_[index(ix + 1, iy + 1, iz + 1)],
+						receiver);
 				}
 			}
+
+			std::vector<std::pair<std::size_t, triangle_type>> merged_triangles;
+
+			for (const auto& triangles : local_triangles)
+			{
+				merged_triangles.insert(merged_triangles.end(), triangles.begin(), triangles.end());
+			}
+
+			std::stable_sort(merged_triangles.begin(), merged_triangles.end(), [](const auto& lhs, const auto& rhs) {
+				return lhs.first < rhs.first;
+			});
+
+			std::vector<triangle_type> result(merged_triangles.size());
+
+			std::transform(merged_triangles.begin(), merged_triangles.end(), result.begin(), [](const auto& t) {
+				return t.second;
+			});
+
+			return result;
 		}
 
 	private:

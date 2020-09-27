@@ -50,13 +50,8 @@ int main(int /*argc*/, char* /*argv*/ [])
 		}
 	});
 
-	std::vector<dmc::triangle<Eigen::Vector3d>> triangles;
-
-	t.enumerate([&](const auto& t) {
-		triangles.push_back(t);
-	});
+	auto triangles = t.enumerate();
 
 	std::ofstream os("a.stl", std::ios::binary);
-
 	write_stl(os, triangles);
 }
