@@ -19,7 +19,4 @@
     <ClInclude Include="include\dmc\dual.hpp" />
     <ClInclude Include="include\dmc\functions.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
 </Project>

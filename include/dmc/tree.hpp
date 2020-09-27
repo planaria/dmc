@@ -6,8 +6,8 @@
 #include "triangle.hpp"
 #include "tree_config.hpp"
 #include "tree_node.hpp"
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include <boost/pool/object_pool.hpp>
 #include <algorithm>
 #include <array>
