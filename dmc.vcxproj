@@ -159,6 +159,8 @@
     <ClInclude Include="include\dmc\tree_config.hpp" />
     <ClInclude Include="include\dmc\dmc.hpp" />
     <ClInclude Include="include\dmc\math_util.hpp" />
+    <ClInclude Include="include\dmc\vector.hpp" />
+    <ClInclude Include="include\dmc\vector_base.hpp" />
     <ClInclude Include="include\dmc\branch_tree_node.hpp" />
     <ClInclude Include="include\dmc\leaf_tree_node.hpp" />
     <ClInclude Include="include\dmc\tree.hpp" />

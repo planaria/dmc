@@ -1,7 +1,6 @@
 #pragma once
+#include "vector.hpp"
 #include "dual.hpp"
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
 
 namespace dmc
 {
@@ -10,7 +9,7 @@ namespace dmc
 	{
 	public:
 		typedef Scalar scalar_type;
-		typedef Eigen::Matrix<scalar_type, 3, 1> vector_type;
+		typedef vector<scalar_type, 3> vector_type;
 		typedef dual<scalar_type, 3> dual_type;
 
 		virtual dual_type value_grad(const vector_type& p) const = 0;
@@ -32,7 +31,7 @@ namespace dmc
 		virtual dual_type value_grad(const vector_type& p) const override
 		{
 			typedef dual<scalar_type, 3> dual_type;
-			typedef Eigen::Matrix<dual_type, 3, 1> dual_vector_type;
+			typedef vector<dual_type, 3> dual_vector_type;
 
 			dual_type dx(p.x(), vector_type(static_cast<scalar_type>(1.0), static_cast<scalar_type>(0.0), static_cast<scalar_type>(0.0)));
 			dual_type dy(p.y(), vector_type(static_cast<scalar_type>(0.0), static_cast<scalar_type>(1.0), static_cast<scalar_type>(0.0)));

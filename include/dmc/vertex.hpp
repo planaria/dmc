@@ -1,6 +1,5 @@
 #pragma once
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
+#include "vector.hpp"
 
 namespace dmc
 {
@@ -9,7 +8,7 @@ namespace dmc
 	{
 	public:
 		typedef Scalar scalar_type;
-		typedef Eigen::Matrix<scalar_type, 3, 1> vector_type;
+		typedef vector<scalar_type, 3> vector_type;
 
 		vertex(const vector_type& position, scalar_type offset)
 			: position_(position)

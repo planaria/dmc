@@ -15,10 +15,10 @@ public:
 	using typename base_type::vector_type;
 
 	template <class T>
-	T templated_value(const Eigen::Matrix<T, 3, 1>& p) const
+	T templated_value(const dmc::vector<T, 3>& p) const
 	{
-		auto cube1 = 1.0 - p.cwiseAbs().maxCoeff();
-		auto cube2 = 1.0 - (p - Eigen::Matrix<T, 3, 1>(0.5, 0.5, 0.5)).cwiseAbs().maxCoeff();
+		auto cube1 = 1.0 - p.norm_l_inf();
+		auto cube2 = 1.0 - (p - dmc::vector<T, 3>(0.5, 0.5, 0.5)).norm_l_inf();
 
 		return std::min(cube1, -cube2);
 	}

@@ -1,6 +1,5 @@
 #pragma once
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
+#include "vector.hpp"
 #include <boost/operators.hpp>
 #include <iostream>
 
@@ -25,14 +24,13 @@ namespace dmc
 	public:
 		typedef Scalar scalar_type;
 		static const int dimension = Dimension;
-		typedef Eigen::Matrix<scalar_type, dimension, 1> vector_type;
+		typedef vector<scalar_type, dimension> vector_type;
 
 		dual() = default;
 
 		dual(scalar_type value)
 			: value_(value)
 		{
-			grad_.setZero();
 		}
 
 		dual(scalar_type value, const vector_type& grad)
