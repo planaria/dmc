@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <chrono>
 
 template <class Scalar>
 struct test_object : dmc::dual_object<Scalar, test_object<Scalar>>
@@ -32,11 +33,11 @@ private:
 
 int main(int /*argc*/, char* /*argv*/ [])
 {
-	Eigen::initParallel();
-
 	dmc::tree_config<double> config;
 	config.grid_width = 0.1;
 	config.tolerance = 0.001;
+
+	auto start_time = std::chrono::high_resolution_clock::now();
 
 	dmc::tree<double> t({-3.0, -3.0, -3.0}, {3.0, 3.0, 3.0}, config);
 
@@ -50,7 +51,14 @@ int main(int /*argc*/, char* /*argv*/ [])
 		}
 	});
 
+	auto generated_time = std::chrono::high_resolution_clock::now();
+
 	auto triangles = t.enumerate();
+
+	auto enumerated_time = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Generation: " << std::fixed << std::setprecision(2) << std::chrono::duration<double>(generated_time - start_time).count() << "s" << std::endl;
+	std::cout << "Enumeration: " << std::fixed << std::setprecision(2) << std::chrono::duration<double>(enumerated_time - generated_time).count() << "s" << std::endl;
 
 	std::ofstream os("a.stl", std::ios::binary);
 	write_stl(os, triangles);
