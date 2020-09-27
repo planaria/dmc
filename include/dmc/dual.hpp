@@ -2,6 +2,7 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
 #include <boost/operators.hpp>
+#include <iostream>
 
 namespace dmc
 {
@@ -138,4 +139,11 @@ namespace dmc
 		scalar_type value_{};
 		vector_type grad_;
 	};
+
+	template <class Scalar, int Dimension>
+	std::ostream& operator<<(std::ostream& os, const dual<Scalar, Dimension>& d)
+	{
+		os << "{ " << d.value() << ", " << d.grad().transpose() << " }";
+		return os;
+	}
 }
