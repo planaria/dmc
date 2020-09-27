@@ -29,7 +29,7 @@ namespace dmc
 			y() = y_;
 		}
 
-		scalar_type x() const
+		const scalar_type& x() const
 		{
 			return (*this)[0];
 		}
@@ -39,7 +39,7 @@ namespace dmc
 			return (*this)[0];
 		}
 
-		scalar_type y() const
+		const scalar_type& y() const
 		{
 			return (*this)[1];
 		}
@@ -76,7 +76,7 @@ namespace dmc
 			return (*this)[0];
 		}
 
-		scalar_type x() const
+		const scalar_type& x() const
 		{
 			return (*this)[0];
 		}
@@ -86,7 +86,7 @@ namespace dmc
 			return (*this)[1];
 		}
 
-		scalar_type y() const
+		const scalar_type& y() const
 		{
 			return (*this)[1];
 		}
@@ -96,9 +96,29 @@ namespace dmc
 			return (*this)[2];
 		}
 
-		scalar_type z() const
+		const scalar_type& z() const
 		{
 			return (*this)[2];
+		}
+
+		vector<Scalar, 2>& xy()
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(x());
+		}
+
+		const vector<Scalar, 2>& xy() const
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(x());
+		}
+
+		vector<Scalar, 2>& yz()
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(y());
+		}
+
+		const vector<Scalar, 2>& yz() const
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(y());
 		}
 	};
 
@@ -135,7 +155,7 @@ namespace dmc
 			return (*this)[0];
 		}
 
-		scalar_type x() const
+		const scalar_type& x() const
 		{
 			return (*this)[0];
 		}
@@ -145,7 +165,7 @@ namespace dmc
 			return (*this)[1];
 		}
 
-		scalar_type y() const
+		const scalar_type& y() const
 		{
 			return (*this)[1];
 		}
@@ -155,7 +175,7 @@ namespace dmc
 			return (*this)[2];
 		}
 
-		scalar_type z() const
+		const scalar_type& z() const
 		{
 			return (*this)[2];
 		}
@@ -165,19 +185,59 @@ namespace dmc
 			return (*this)[3];
 		}
 
-		scalar_type w() const
+		const scalar_type& w() const
 		{
 			return (*this)[3];
 		}
 
+		vector<Scalar, 2>& xy()
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(x());
+		}
+
+		const vector<Scalar, 2>& xy() const
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(x());
+		}
+
+		vector<Scalar, 2>& yz()
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(y());
+		}
+
+		const vector<Scalar, 2>& yz() const
+		{
+			return reinterpret_cast<vector<Scalar, 2>&>(y());
+		}
+
+		vector<Scalar, 2> xz() const
+		{
+			return vector<Scalar, 2>(x(), z());
+		}
+
+		vector<Scalar, 2> yx() const
+		{
+			return vector<Scalar, 2>(y(), x());
+		}
+
+		vector<Scalar, 2> zx() const
+		{
+			return vector<Scalar, 2>(z(), x());
+		}
+
+		vector<Scalar, 2> zy() const
+		{
+			return vector<Scalar, 2>(z(), y());
+		}
+
 		vector<Scalar, 3>& xyz()
 		{
-			return *reinterpret_cast<vector<Scalar, 3>*>(this->data());
+			return reinterpret_cast<vector<Scalar, 3>&>(x());
 		}
 
 		const vector<Scalar, 3>& xyz() const
 		{
-			return *reinterpret_cast<const vector<Scalar, 3>*>(this->data());
+			return reinterpret_cast<const vector<Scalar, 3>&>(x());
 		}
 	};
 
