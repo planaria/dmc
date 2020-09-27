@@ -1,5 +1,7 @@
 #include <dmc/dmc.hpp>
+#include <iostream>
 #include <fstream>
+#include <iomanip>
 
 template <class Scalar>
 struct test_object : dmc::dual_object<Scalar, test_object<Scalar>>
@@ -15,10 +17,13 @@ public:
 	{
 	}
 
-	template <class Vector>
-	auto templated_value(const Vector& p) const
+	template <class T>
+	T templated_value(const dmc::vector<T, 3>& p) const
 	{
-		return 1.0 - p.norm_l_inf();
+		auto cube1 = 1.0 - p.norm_l_inf();
+		auto cube2 = 1.0 - (p - dmc::vector<T, 3>(0.5, 0.5, 0.5)).norm_l_inf();
+
+		return std::min(cube1, -cube2);
 	}
 
 private:
