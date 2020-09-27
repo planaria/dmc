@@ -15,19 +15,37 @@ namespace dmc
 		std::uint32_t num_triangles;
 	};
 
+	struct stl_vector3f
+	{
+		float x;
+		float y;
+		float z;
+
+		stl_vector3f()
+		{
+		}
+
+		stl_vector3f(const Eigen::Vector3f& v)
+			: x(v.x())
+			, y(v.y())
+			, z(v.z())
+		{
+		}
+	};
+
 	struct stl_triangle
 	{
-		vector3f normal;
-		vector3f p1;
-		vector3f p2;
-		vector3f p3;
+		stl_vector3f normal;
+		stl_vector3f p1;
+		stl_vector3f p2;
+		stl_vector3f p3;
 		std::uint16_t dummy;
 	};
 
 #pragma pack(pop)
 
 	template <class Scalar>
-	void write_stl(std::ostream& os, const std::vector<triangle<Scalar>>& triangles)
+	void write_stl(std::ostream& os, const std::vector<triangle<Eigen::Matrix<Scalar, 3, 1>>>& triangles)
 	{
 		stl_header header =
 			{
@@ -39,15 +57,14 @@ namespace dmc
 
 		std::vector<stl_triangle> stl_triangles(triangles.size());
 
-		std::transform(triangles.begin(), triangles.end(), stl_triangles.begin(),
-					   [](const auto& t) {
-						   stl_triangle result;
-						   result.p1 = t.p1().template cast<float>();
-						   result.p2 = t.p2().template cast<float>();
-						   result.p3 = t.p3().template cast<float>();
+		std::transform(triangles.begin(), triangles.end(), stl_triangles.begin(), [](const triangle<Eigen::Matrix<Scalar, 3, 1>>& t) {
+			stl_triangle result;
+			result.p1 = static_cast<Eigen::Vector3f>(t.p1().template cast<float>());
+			result.p2 = static_cast<Eigen::Vector3f>(t.p2().template cast<float>());
+			result.p3 = static_cast<Eigen::Vector3f>(t.p3().template cast<float>());
 
-						   return result;
-					   });
+			return result;
+		});
 
 		os.write(reinterpret_cast<const char*>(stl_triangles.data()), sizeof(stl_triangle) * stl_triangles.size());
 	}

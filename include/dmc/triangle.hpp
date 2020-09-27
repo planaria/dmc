@@ -1,5 +1,4 @@
 #pragma once
-#include "vector.hpp"
 
 namespace dmc
 {
@@ -46,7 +45,4 @@ namespace dmc
 	{
 		return triangle<Vector>(p1, p2, p3);
 	}
-
-	typedef triangle<vector3d> triangle3d;
-	typedef triangle<vector3f> triangle3f;
 }

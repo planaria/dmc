@@ -18,10 +18,10 @@ public:
 	}
 
 	template <class T>
-	T templated_value(const dmc::vector<T, 3>& p) const
+	T templated_value(const Eigen::Matrix<T, 3, 1>& p) const
 	{
-		auto cube1 = 1.0 - p.norm_l_inf();
-		auto cube2 = 1.0 - (p - dmc::vector<T, 3>(0.5, 0.5, 0.5)).norm_l_inf();
+		auto cube1 = 1.0 - p.cwiseAbs().maxCoeff();
+		auto cube2 = 1.0 - (p - Eigen::Matrix<T, 3, 1>(0.5, 0.5, 0.5)).cwiseAbs().maxCoeff();
 
 		return std::min(cube1, -cube2);
 	}
@@ -32,6 +32,8 @@ private:
 
 int main(int /*argc*/, char* /*argv*/ [])
 {
+	Eigen::initParallel();
+
 	dmc::tree_config<double> config;
 	config.grid_width = 0.1;
 	config.tolerance = 0.001;
@@ -48,7 +50,7 @@ int main(int /*argc*/, char* /*argv*/ [])
 		}
 	});
 
-	std::vector<dmc::triangle3d> triangles;
+	std::vector<dmc::triangle<Eigen::Vector3d>> triangles;
 
 	t.enumerate([&](const auto& t) {
 		triangles.push_back(t);

@@ -5,7 +5,6 @@
 #include "object.hpp"
 #include "tree_config.hpp"
 #include "tree_node.hpp"
-#include "vector.hpp"
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <algorithm>
@@ -21,7 +20,8 @@ namespace dmc
 	{
 	public:
 		typedef Scalar scalar_type;
-		typedef vector<scalar_type, 3> vector_type;
+		typedef Eigen::Matrix<scalar_type, 3, 1> vector_type;
+		typedef Eigen::Matrix<std::size_t, 3, 1> vector_size_type;
 		typedef dual<scalar_type, 3> dual_type;
 		typedef object<scalar_type> object_type;
 		typedef tree_config<scalar_type> config_type;
@@ -34,15 +34,14 @@ namespace dmc
 			: minimum_(minimum)
 			, config_(config)
 		{
-			auto v = maximum - minimum;
+			vector_type v = maximum - minimum;
 
-			auto scaler = [&](auto x) {
-				return std::max(static_cast<scalar_type>(1.0), std::ceil(x / config_.grid_width));
-			};
+			for (int i = 0; i < 3; ++i)
+			{
+				size_[i] = static_cast<std::size_t>(std::max(static_cast<scalar_type>(1.0), std::ceil(v[i] / config_.grid_width)));
+			}
 
-			size_ = v.map(scaler).template cast<std::size_t>();
-
-			children_.resize(size_.product());
+			children_.resize(size_.prod());
 		}
 
 		void generate(const object_type& obj, const std::function<void(double)>& progress_receiver)
@@ -52,14 +51,14 @@ namespace dmc
 
 		void generate(const object_type& obj, const std::function<void(double)>* progress_receiver = nullptr)
 		{
-			auto total_size = size_.x() * size_.y() * size_.z();
-
 			std::size_t progress = 0;
 
 			if (progress_receiver)
 			{
 				(*progress_receiver)(0.0);
 			}
+
+			auto total_size = size_.x() * size_.y() * size_.z();
 
 			std::vector<std::size_t> indices(total_size);
 
@@ -78,8 +77,9 @@ namespace dmc
 				auto ix = j % size_.x();
 				auto iy = j / size_.x() % size_.y();
 				auto iz = j / size_.x() / size_.y();
-				auto minimum = minimum_ + vector<std::size_t, 3>(ix, iy, iz).cast<scalar_type>() * config_.grid_width;
-				auto maximum = minimum_ + vector<std::size_t, 3>(ix + 1, iy + 1, iz + 1).cast<scalar_type>() * config_.grid_width;
+				vector_type minimum = minimum_ + vector_size_type(ix, iy, iz).cast<scalar_type>() * config_.grid_width;
+				vector_type maximum = minimum_ + vector_size_type(ix + 1, iy + 1, iz + 1).cast<scalar_type>() * config_.grid_width;
+
 				children_[index(ix, iy, iz)] = generate_impl(obj, minimum, maximum, 0);
 
 				if (progress_receiver)
@@ -188,7 +188,12 @@ namespace dmc
 
 			std::transform(points.begin(), points.end(), values.begin(), [&](const auto& p) {
 				auto d = obj.value_grad(p);
-				d.grad() = d.grad().map(sanitize);
+
+				for (int i = 0; i < d.grad().rows(); ++i)
+				{
+					d.grad()(i) = sanitize(d.grad()(i));
+				}
+
 				return d;
 			});
 
@@ -196,9 +201,9 @@ namespace dmc
 
 			for (int i = 0; i < 8; ++i)
 			{
-				a(i, 0) = values[i].grad().x();
-				a(i, 1) = values[i].grad().y();
-				a(i, 2) = values[i].grad().z();
+				a(i, 0) = values[i].grad()(0);
+				a(i, 1) = values[i].grad()(1);
+				a(i, 2) = values[i].grad()(2);
 				a(i, 3) = static_cast<scalar_type>(-1.0);
 			}
 
@@ -217,10 +222,12 @@ namespace dmc
 
 			Eigen::Matrix<scalar_type, 11, 1> b;
 
-			auto medium = (minimum + maximum) * static_cast<scalar_type>(0.5);
+			vector_type medium = (minimum + maximum) * static_cast<scalar_type>(0.5);
 
 			for (int i = 0; i < 8; ++i)
-				b(i) = dot_product(values[i].grad(), points[i] - medium) - values[i].value();
+			{
+				b(i) = values[i].grad().dot(points[i] - medium) - values[i].value();
+			}
 
 			b(8) = 0.0;
 			b(9) = 0.0;
@@ -228,13 +235,15 @@ namespace dmc
 
 			Eigen::Matrix<scalar_type, 4, 1> x = a.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV).solve(b);
 
-			auto center = vector_type(x(0), x(1), x(2)) + medium;
+			vector_type center = vector_type(x(0), x(1), x(2)) + medium;
 			auto offset = obj.value(center);
 
 			auto error = scalar_type();
 
 			for (int i = 0; i < 8; ++i)
-				error += squared(offset - values[i].value() - dot_product(values[i].grad(), center - points[i]));
+			{
+				error += squared(offset - values[i].value() - values[i].grad().dot(center - points[i]));
+			}
 
 			if (depth >= config_.maximum_depth || error < squared(config_.tolerance))
 			{
@@ -664,7 +673,7 @@ namespace dmc
 		std::size_t grid_size_;
 		scalar_type grid_width_;
 
-		vector<std::size_t, 3> size_;
+		vector_size_type size_;
 		std::vector<std::unique_ptr<node_type>> children_;
 	};
 }
