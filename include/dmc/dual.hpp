@@ -139,6 +139,24 @@ namespace dmc
 	};
 
 	template <class Scalar, int Dimension>
+	Scalar value(const dual<Scalar, Dimension>& d)
+	{
+		return d.value();
+	}
+
+	template <class Scalar>
+	Scalar value(const Scalar& value)
+	{
+		return value;
+	}
+
+	template <class Scalar, int Dimension>
+	Scalar grad(const dual<Scalar, Dimension>& d)
+	{
+		return d.grad();
+	}
+
+	template <class Scalar, int Dimension>
 	std::ostream& operator<<(std::ostream& os, const dual<Scalar, Dimension>& d)
 	{
 		os << "{ " << d.value() << ", " << d.grad().transpose() << " }";
